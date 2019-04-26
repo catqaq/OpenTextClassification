@@ -8,7 +8,7 @@
 
 ## Training
 
-- The following command starts training. Run it with ```-h``` for optional arguments.
+- The following command starts training.
 
 ```
 python main.py
