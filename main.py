@@ -154,7 +154,7 @@ if __name__ == '__main__':
         test_acc.append(tmp)
         if tmp > max_acc:
             max_acc = tmp
-            #torch.save(model.state_dict(), './result/'+classifier+'.pt')
+            torch.save(model.state_dict(), './result/'+classifier+'.pt')
     print('Repeat %s times: %s' % (t, test_acc))
     print('average test_acc: %.1f%%' % (100*sum(test_acc)/t))
     print('max acc: %.1f%%' % (100*max_acc))
