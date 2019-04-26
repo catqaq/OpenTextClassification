@@ -2,5 +2,14 @@
 - Dataset: yahoo_answers_csv
 - Model: CNN/LSTM/GRU.
 - Pytorch: 1.0.1
-- Cross-entropy Loss + Adam optimizer.
+- Python: 3.6
+- torchtext: 0.3.1.
 - Support pretrained word embedding.
+
+## Training
+
+- The following command starts training. Run it with ```-h``` for optional arguments.
+
+```
+python main.py
+```
