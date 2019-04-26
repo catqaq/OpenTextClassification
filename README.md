@@ -6,6 +6,12 @@
 - torchtext: 0.3.1.
 - Support pretrained word embedding.([word2vec](https://github.com/mmihaltz/word2vec-GoogleNews-vectors))
 
+## torchtext
+- This package can provide an elegant way to build vocabulary([yahoo](https://s3.amazonaws.com/fast-ai-nlp/yahoo_answers_csv.tgz)). 
+```
+TEXT.build_vocab(dataset, vectors)
+```
+
 ## Training
 
 - The following command starts training.
