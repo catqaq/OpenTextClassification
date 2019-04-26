@@ -1,5 +1,5 @@
 # Text Classification
-- Dataset: yahoo_answers_csv ([word2vec](https://s3.amazonaws.com/fast-ai-nlp/yahoo_answers_csv.tgz))
+- Dataset: yahoo_answers_csv ([yahoo](https://s3.amazonaws.com/fast-ai-nlp/yahoo_answers_csv.tgz))
 - Model: CNN/LSTM/GRU.
 - Pytorch: 1.0.1
 - Python: 3.6
