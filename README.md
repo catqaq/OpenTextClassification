@@ -1,10 +1,10 @@
 # Text Classification
-- Dataset: yahoo_answers_csv
+- Dataset: yahoo_answers_csv https://s3.amazonaws.com/fast-ai-nlp/yahoo_answers_csv.tgz
 - Model: CNN/LSTM/GRU.
 - Pytorch: 1.0.1
 - Python: 3.6
 - torchtext: 0.3.1.
-- Support pretrained word embedding.
+- Support pretrained word embedding.([word2vec](https://github.com/mmihaltz/word2vec-GoogleNews-vectors))
 
 ## Training
 
