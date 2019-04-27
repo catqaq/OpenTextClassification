@@ -19,3 +19,6 @@ TEXT.build_vocab(dataset, vectors)
 ```
 python main.py
 ```
+## Refs
+- Kim, Y. J. E. A. (2014). "Convolutional Neural Networks for Sentence Classification." 
+- cnn-text-classification-pytorch
