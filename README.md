@@ -21,5 +21,5 @@ python main.py
 ```
 ## Refs
 - Kim, Y. J. E. A. (2014). "Convolutional Neural Networks for Sentence Classification." 
-- ([cnn-text-classification-pytorch](https://github.com/Shawn1993/cnn-text-classification-pytorch))
-- ([Understanding LSTM Networks](https://colah.github.io/posts/2015-08-Understanding-LSTMs/))
+- [cnn-text-classification-pytorch](https://github.com/Shawn1993/cnn-text-classification-pytorch)
+- [Understanding LSTM Networks](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)
