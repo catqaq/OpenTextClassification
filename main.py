@@ -1,126 +1,144 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Apr  9 10:13:19 2019
+Created on Mon Sep  9 13:53:44 2019
 
 @author: jjg
 """
 
 import torch
 import os
-os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 import numpy as np
-import copy
 from torchtext import data
 from torchtext.vocab import Vectors
 from nltk.tokenize import word_tokenize
-from models import TextCNN, LSTM, GRU, Hybrid_CNN
-from sim_cnn import Sim_CNN
+from models import TextCNN, LSTM, GRU, BiLSTM_LSTM
+#u can ignore sims
+from sims import Hybrid_CNN, Sim_CNN, SimLSTM, SimLSTM1, SimLSTM2, SimLSTM3,\
+SimLSTM4, SimLSTM5, SimLSTM6, SimLSTM7, SimLSTM8, SimLSTM9, SimLSTM10, \
+SimLSTM11, SimAttn, SimAttn1, SimAttn2, SimAttn3, SimAttnPE1, SimCnnPe, SimAttnX
+
 from settings import Settings
 from train_eval import training, evaluating
 
+#available models, u can use the first 3 models: TextCNN, LSTM, GRU
+models = {
+    'TextCNN': TextCNN,
+    'LSTM': LSTM,
+    'GRU': GRU,
+    'Sim_CNN': Sim_CNN,
+    'Hybrid': Hybrid_CNN,
+    'SimLSTM': SimLSTM,
+    'SimLSTM1': SimLSTM1,
+    'SimLSTM2': SimLSTM2,
+    'SimLSTM3': SimLSTM3,
+    'SimLSTM4': SimLSTM4,
+    'SimLSTM5': SimLSTM5,
+    'SimLSTM6': SimLSTM6,
+    'SimLSTM7': SimLSTM7,
+    'SimLSTM8': SimLSTM8,
+    'BiLSTM_LSTM': BiLSTM_LSTM,
+    'SimLSTM9': SimLSTM9,
+    'SimLSTM10': SimLSTM10,
+    'SimLSTM11': SimLSTM11,
+    'SimAttn': SimAttn,
+    'SimAttn1': SimAttn1,
+    'SimAttn2': SimAttn2,
+    'SimAttnPE1': SimAttnPE1,
+    'SimAttn3': SimAttn3,
+    'SimCnnPe': SimCnnPe,
+    'SimAttnX': SimAttnX
+}
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-data_path = '/home/jjg/data/text_classification/dbpedia'
-class_vecs = torch.from_numpy(np.load(data_path+'/classname_based_class_vecs.npy'))
-length=100
+data_path = '/home/jjg/data/'
+vector_path = os.path.join(data_path, 'vectors')
+dataset_path = os.path.join(data_path, 'text_classification', 'dbpedia')
 
-cache = 'mycache'
-if not os.path.exists(cache):
-    os.mkdir(cache)
-vectors = Vectors(
-    name='googlenews.txt', #or other pre-trained word vector file in txt format 
-    cache=cache)  
+# class_vecs is used for models in sims.py, if u don't need, just set use_sims to False
+use_sims = False
+if use_sims:
+    class_vecs = torch.from_numpy(
+        np.load(os.path.join(dataset_path, 'bow_based_label_embedding.npy')))
+else:
+    class_vecs = torch.randn(14, 300)  #14/dbpedia, 10/yahoo
+length = 100  #100/dbpedia; 300/yahoo
 
-############################### construct vocab ##################
-
-#we've finished tokenization above，set tokenize=None, better set batch_first=True
+#set batch_first=True
 TEXT = data.Field(
     sequential=True,
     tokenize=word_tokenize,
     lower=True,
-    fix_length=length,    #according to the dataset
+    fix_length=length,  #according to the dataset
     batch_first=True)
-  
+
 LABEL = data.Field(sequential=False, use_vocab=False, batch_first=True)
+fields = {'label': LABEL, 'text': TEXT}
 
-train, test = data.TabularDataset.splits(
-        path=data_path,
-        train='train.csv',
-        test='test.csv',
-        format='csv',
-        fields=[('label', LABEL), ('text', TEXT)],
-        skip_header=True)
+#use word2vec embeddings(change GoogleNews-vectors-negative300.bin to googlenews.txt)
+#or use Glove embeddings
+#TEXT.build_vocab(train, vectors="glove.840B.300d") download the word embedding file
+cache = os.path.join(vector_path, 'vector_cache')
+if not os.path.exists(cache):
+    os.mkdir(cache)
+vectors = Vectors(
+    # name=os.path.join(vector_path,'googlenews.txt'),
+    name=os.path.join(vector_path, 'glove.840B.300d.txt'),#torch.Size([2196017, 300])
+    cache=cache)
 
-#split validation set
-train, dev = train.split(split_ratio=0.7)
+#load data set
+train, dev, test = data.TabularDataset.splits(
+    path=dataset_path,
+    train='train.csv',
+    validation='dev.csv',
+    test='test.csv',
+    format='csv',
+    fields=[('label', LABEL), ('text', TEXT)],
+    skip_header=True)
 
-#construct the vocab
-#TEXT.build_vocab(train, vectors="glove.840B.300d")
-TEXT.build_vocab(train, vectors=vectors)
-vocab = TEXT.vocab
-del vectors               #del vectors to save space
-
-
-#can choose 3 kinds of models
-models = {'CNN': TextCNN, 'LSTM': LSTM, 'GRU': GRU, 'Sim_CNN': Sim_CNN, 'Hybrid': Hybrid_CNN}
+#construct the vocab, filter low frequency words if needed
+TEXT.build_vocab(train, min_freq=2, vectors=vectors)
+del vectors  #del vectors to save space
 
 if __name__ == '__main__':
-    #settings
-    #classifier='Sim_CNN'         #choose CNN/LSTM/GRU
-    #see settings.py for detail
-    label_vecs =class_vecs.unsqueeze(1).unsqueeze(2)
+    #settings, see settings.py for detail
+    label_vecs = class_vecs.unsqueeze(1).unsqueeze(2)  #u can ignore this
     args = Settings(
-        vocab.vectors,            #pre-trained word embeddings
+        TEXT.vocab.vectors,  #pre-trained word embeddings
         label_vecs,
         L=length,
-        Dim=300,                       #embedding dimension
-        num_class=14,
-        Cout=256,                       #kernel numbers
-        kernel_size=[3, 4, 5],         #different kernel size
+        Dim=300,             #embedding dimension
+        num_class=14,        #14/dbpedia, 10/yahoo
+        Cout=256,            #kernel numbers
+        kernel_size=[3, 4, 5],  #different kernel size
         dropout=0.5,
-        batch_size=256,
-        num_epochs=10,
-        lr=0.0001,
+        num_epochs=5,
+        lr=0.001,
         weight_decay=0,
-        static=4,                   #update the embeddings or not
+        static=2,            #update the embeddings or not
+        batch_size=256,
         batch_normalization=False,
-        hidden_size=100,
-        rnn_layers=2,
-        bidirectional=False)
-    
+        hidden_size=256,    #100,128,256...
+        rnn_layers=1,
+        bidirectional=True)  #birnn/rnn
+
     #construct dataset iterator
     train_iter, dev_iter, test_iter = data.BucketIterator.splits(
-           (train, dev, test),
-           sort_key=lambda x: len(x.text), 
-           batch_sizes=(args.batch_size, args.batch_size, args.batch_size),
-           )
-    
-    res = []
-    for classifier in ['CNN']:
-        
-        if args.static:
-            print('static %s(without updating embeddings):' % classifier)
-        else:
-            print('non-static %s(update embeddings):' % classifier)
-        
-        dev_acc = []
-        t = 1  #repeat times
-        best_acc = 0
-        for i in range(t):
-            model = models[classifier](args)
-            training(train_iter, dev_iter, model, args, device)
-            tmp = evaluating(dev_iter, model, device)
-            dev_acc.append(tmp)
-            if tmp > best_acc:
-                best_acc = tmp
-                best_model_wts = copy.deepcopy(model.state_dict())
-        print('Repeat %s times: %s' % (t, dev_acc))
-        print('average dev_acc: %.1f%%' % (100*sum(dev_acc)/t))
-        print('max dev_acc: %.1f%%' % (100*best_acc))
-        model.load_state_dict(best_model_wts)
-        #finally evaluate the test set
-        test_acc = evaluating(test_iter, model, device)
-        print('test acc: %.1f%%' % (test_acc*100))
-        res.append(test_acc)
-    print(res)
-    
+        (train, dev, test),
+        sort_key=lambda x: len(x.text),
+        batch_sizes=[args.batch_size] * 3,
+    )
+
+    classifier = 'TextCNN'
+    # u can use 1 or 2 for static and 3 or 4 for non-static
+    if args.static in [1, 2]:
+        print('static %s(without updating embeddings):' % classifier)
+    elif args.static in [3, 4]:
+        print('non-static %s(update embeddings):' % classifier)
+
+    model = models[classifier](args)
+    training(train_iter, dev_iter, model, args, device)
+
+    #finally evaluate the test set
+    test_acc = evaluating(test_iter, model, device)
+    print('test acc: %.1f%%' % (test_acc * 100)) #98.8/dbpedia
