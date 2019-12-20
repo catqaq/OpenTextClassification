@@ -92,11 +92,15 @@ class LSTM(nn.Module):
             bidirectional=self.bidirectional  #bi-LSTM
         )
     
-        #Orthogonal Initialization, 
-        if self.layers==1:
+        #LSTM Initialization, 
+        for name, params in self.rnn.named_parameters():
             #weight: Orthogonal Initialization
-            nn.init.orthogonal_(self.rnn.weight_ih_l0)
-            nn.init.orthogonal_(self.rnn.weight_hh_l0)
+            if 'weight' in name:
+                nn.init.orthogonal_(params)
+            #lstm forget gate bias init with 1.0
+            if 'bias' in name:
+                b_i, b_f, b_c, b_o = params.chunk(4, 0)
+                nn.init.ones_(b_f)
 
     def forward(self, x):
         # x shape (batch, time_step, input_size), time_step--->seq_len
@@ -170,11 +174,7 @@ class BiLSTM_LSTM(nn.Module):
             bidirectional=False               #LSTM
         )
         
-        #Orthogonal Initialization
-        if self.layers==1:
-            #weight: Orthogonal Initialization
-            nn.init.orthogonal_(self.rnn.weight_ih_l0)
-            nn.init.orthogonal_(self.rnn.weight_hh_l0)
+        #Orthogonal Initialization(TODO)
            
             
         self.dropout = nn.Dropout(args.drop)
