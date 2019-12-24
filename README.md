@@ -11,7 +11,6 @@
 ```
 TEXT.build_vocab(dataset, vectors)
 ```
-
 ## Training
 
 ```
@@ -26,5 +25,7 @@ python main.py #training
 - [Understanding LSTM Networks](https://colah.github.io/posts/2015-08-Understanding-LSTMs/)
 - [Glove](https://nlp.stanford.edu/projects/glove/)
 - [你在训练RNN的时候有哪些特殊的trick？](https://www.zhihu.com/question/57828011)
-- [图解CNN](https://blog.csdn.net/v_july_v/article/details/79434745)
 - [CNN](https://blog.csdn.net/v_JULY_v/article/details/51812459)
+- [rnn.py](pytorch/pytorch/blob/master/torch/nn/modules/rnn.py)
+- [rnn initialization](https://discuss.pytorch.org/t/lstm-gru-gate-weights/2807)
+- [Explaining and illustrating orthogonal initialization for recurrent neural networks](https://smerity.com/articles/2016/orthogonal_init.html)
