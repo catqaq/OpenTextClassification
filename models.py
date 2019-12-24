@@ -27,16 +27,14 @@ class TextCNN(nn.Module):
         
         self.embed = nn.Embedding(V, D)
         self.embed.weight.data.copy_(weight_matrix)
-        if static in [1, 2]:
+        if static:
             self.embed.weight.requires_grad=False
-        else:
-            self.embed.weight.requires_grad=True
         
         self.bn2d = nn.BatchNorm2d(1,momentum=0.1)
         #can keep the size by set padding=(kernel_size-1)//2, if stride=1
         self.convs1 = nn.ModuleList([nn.Conv2d(Ci, Co, (K, D), padding=((K-1)//2,0)) for K in Ks])
         self.dropout = nn.Dropout(args.drop)
-        self.fc1 = nn.Linear(len(Ks)*Co, C)
+        self.fc = nn.Linear(len(Ks)*Co, C)
 
     def forward(self, x):
         x = self.embed(x)  # (N, L, D)
@@ -44,8 +42,6 @@ class TextCNN(nn.Module):
         # (N, Ci, L, D), insert a dimention of size one(in_channels Ci)
         x = x.unsqueeze(1)  
         
-        if self.use_bn:
-            x=self.bn2d(x)
         # ModuleList can act as iterable, or be indexed using ints
         x = [F.relu(conv(x)).squeeze(3) for conv in self.convs1] #[(N, Co, L), ...]*len(Ks)
 
@@ -56,7 +52,7 @@ class TextCNN(nn.Module):
 
         x = self.dropout(x)  # (N, len(Ks)*Co)
     
-        x = self.fc1(x)  # (N, C)
+        x = self.fc(x)  # (N, C)
         return x
       
 
@@ -80,8 +76,6 @@ class LSTM(nn.Module):
         self.embed.weight.data.copy_(weight_matrix)
         if self.static:
             self.embed.weight.requires_grad=False
-        else:
-            self.embed.weight.requires_grad=True
 
         self.rnn = nn.LSTM(               
             input_size=self.D,                #The number of expected features in the input x 
@@ -91,7 +85,10 @@ class LSTM(nn.Module):
             dropout=self.rnn_drop,            #dropout probability
             bidirectional=self.bidirectional  #bi-LSTM
         )
-    
+        
+        self.dropout = nn.Dropout(args.drop)
+        self.fc = nn.Linear(self.num_directions*self.hidden_size, self.C)
+        
         #LSTM Initialization, 
         for name, params in self.rnn.named_parameters():
             #weight: Orthogonal Initialization
@@ -148,13 +145,8 @@ class BiLSTM_LSTM(nn.Module):
         
         self.embed = nn.Embedding(self.V, self.D)
         self.embed.weight.data.copy_(weight_matrix)
-        if static == 1:
+        if static:
             self.embed.weight.requires_grad=False
-            self.conv_sim.weight.requires_grad=False
-        elif static == 2:
-            self.embed.weight.requires_grad=False
-        elif static == 3:
-            self.conv_sim.weight.requires_grad=False
 
         self.rnn = nn.LSTM(               
             input_size=self.D,                #The number of expected features in the input x 

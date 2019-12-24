@@ -3,6 +3,140 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
+
+class SimCNN(nn.Module):
+    """
+    use SimCNN to learn label presentation and compute similarities to help classification
+    """
+    
+    def __init__(self, args):
+        super(SimCNN, self).__init__()
+        self.V = args.num_embeddings
+        self.L = args.L
+        self.D = args.D
+        self.C = args.C
+        Ci = args.Ci
+        weight_matrix = args.weight
+        self.use_bn = args.use_bn
+        
+        self.embed = nn.Embedding(self.V, self.D)
+        self.embed.weight.data.copy_(weight_matrix)
+        
+        self.bn2d = nn.BatchNorm2d(1,momentum=0.1)
+        self.conv_sim = nn.Conv2d(Ci, self.C, (1, self.D)) #label_vec_kernel with size(1,D)
+        self.conv_sim.weight = torch.nn.Parameter(args.label_vecs)
+        if args.static:
+            self.embed.weight.requires_grad=False
+        if args.sim_static:
+            self.conv_sim.weight.requires_grad=False
+        
+        self.dropout = nn.Dropout(args.drop)
+        self.fc1 = nn.Linear(self.L*self.C, self.C)
+        self.fc2 = nn.Linear(self.L, 1)
+        self.fc3 = nn.ModuleList([nn.Linear(self.L, 1) for i in range(self.C)])
+
+    def forward(self, x):
+        x = self.embed(x)  # (N, L, D)
+            
+        x = x.unsqueeze(1)  # (N, Ci, L, D), insert a dimention of size one(in_channels Ci)
+        
+        x = self.conv_sim(x).squeeze() #(N, C, L)
+        #x = F.softmax(x, dim=1)
+        
+        # flatten or chunk-share fc or chunk-no-share fc
+        
+        # flatten
+        #x = self.fc1(self.dropout(x.view(-1, self.C*self.L)))
+        
+        # chunk-share fc
+        #x = self.fc2(self.dropout(x)).squeeze()
+        x = [self.fc2(self.dropout(i)) for i in torch.chunk(x, self.C, 1)]
+        x = torch.cat(x, 1).squeeze()
+        
+        # chunk-no-share fc
+        #x = torch.chunk(x, self.C, 1)
+        #x = [self.fc3[i](self.dropout(x[i])) for i in range(self.C)]
+        #x = torch.cat(x, 1).squeeze()
+        return x
+
+
+class SimLSTM(nn.Module):
+    def __init__(self, args):
+        super(SimLSTM, self).__init__()
+        self.V = args.num_embeddings
+        self.D = args.D
+        self.C = args.C
+        self.Ci = args.Ci
+        self.layers = args.rnn_layers
+        self.drop = args.drop if self.layers > 1 else 0
+        weight_matrix = args.weight
+        self.bidirectional =  args.bidirectional
+        self.num_directions = 2 if self.bidirectional else 1
+        self.hidden_size = args.hidden_size
+        self.batch_size = args.batch_size
+        
+        self.embed = nn.Embedding(self.V, self.D)
+        self.embed.weight.data.copy_(weight_matrix)
+        self.conv_sim = nn.Conv2d(self.Ci, self.C, (1, self.D)) #10 label vec kernel with size(1,D)
+        self.conv_sim.weight = torch.nn.Parameter(args.label_vecs)
+        if args.static:
+            self.embed.weight.requires_grad=False
+        if args.sim_static:
+            self.conv_sim.weight.requires_grad=False
+
+        self.rnn = nn.LSTM(               
+            input_size=self.D+self.C,                #The number of expected features in the input x 
+            hidden_size=self.hidden_size,     # rnn hidden unit
+            num_layers=self.layers,           # number of rnn layers
+            batch_first=True,                 # set batch first
+            dropout=self.drop,                #dropout probability
+            bidirectional=self.bidirectional  #bi-LSTM
+        )
+        #LSTM Initialization, 
+        for name, params in self.rnn.named_parameters():
+            #weight: Orthogonal Initialization
+            if 'weight' in name:
+                nn.init.orthogonal_(params)
+            #lstm forget gate bias init with 1.0
+            if 'bias' in name:
+                b_i, b_f, b_c, b_o = params.chunk(4, 0)
+                nn.init.ones_(b_f)
+            
+        self.dropout = nn.Dropout(args.drop)
+        self.fc = nn.Linear(self.num_directions*self.hidden_size, self.C)
+
+    def forward(self, x):
+        # x shape (batch, time_step, input_size), time_step--->seq_len
+        # r_out shape (batch, time_step, output_size), out_put_size--->num_directions*hidden_size
+        # h_n shape (num_layers*num_directions, batch, hidden_size)
+        # c_n shape (num_layers*num_directions, batch, hidden_size)
+        #(h_0,c_0), here we use zero initialization
+        x = self.embed(x)  # (N, L, D)
+        
+        sim = x.unsqueeze(1)  # (N, Ci, L, D), insert a dimention of size one(in_channels Ci)
+        sim = self.conv_sim(sim).squeeze() #(N, C, L)
+        sim = sim.permute(0,2,1) ##(N, L, C)
+        
+        # concatenate x and sim --> (N, L, D+C)
+        x = torch.cat([x,sim],2)
+        
+        #initialization hidden state
+        #1.zero init
+        r_out, (h_n, c_n) = self.rnn(x, None)  # None represents zero initial hidden state
+        
+        # choose r_out at the last time step or outputs at every time step
+        if self.bidirectional:
+            #concatenate normal RNN's last time step(-1) output and reverse RNN's last time step(0) output
+            #print(r_out[:, -1, :self.hidden_size].size()) #[B, hidden_size]
+            out = torch.cat([r_out[:, -1, :self.hidden_size],r_out[:, 0, self.hidden_size:]],1)
+        else:
+            out = r_out[:, -1, :] #[B, hidden_size*num_directions]
+        
+        out = self.fc(self.dropout(out))
+            
+        return out
+
+
 class Hybrid_CNN(nn.Module):
     
     def __init__(self, args):
@@ -374,69 +508,6 @@ class SimAttn3(nn.Module):
         return sim
     
 
-class Sim_CNN(nn.Module):
-    """
-    use Sim_CNN to learn label presentation and compute similarities to help classification
-    """
-    
-    def __init__(self, args):
-        super(Sim_CNN, self).__init__()
-        self.V = args.num_embeddings
-        self.L = args.L
-        self.D = args.D
-        self.C = args.C
-        Ci = args.Ci
-        weight_matrix = args.weight
-        static = args.static
-        self.use_bn = args.use_bn
-        
-        self.embed = nn.Embedding(self.V, self.D)
-        self.embed.weight.data.copy_(weight_matrix)
-        
-        self.bn2d = nn.BatchNorm2d(1,momentum=0.1)
-        self.conv_sim = nn.Conv2d(Ci, self.C, (1, self.D)) #10 label vec kernel with size(1,D)
-        self.conv_sim.weight = torch.nn.Parameter(args.label_vecs)
-        if static == 1:
-            self.embed.weight.requires_grad=False
-            self.conv_sim.weight.requires_grad=False
-        elif static == 2:
-            self.embed.weight.requires_grad=False
-        elif static == 3:
-            self.conv_sim.weight.requires_grad=False
-        
-        self.dropout = nn.Dropout(args.drop)
-        self.fc1 = nn.Linear(self.L*self.C, self.C)
-        self.fc2 = nn.Linear(self.L, 1)
-        self.fc3 = nn.ModuleList([nn.Linear(self.L, 1) for i in range(self.C)])
-
-    def forward(self, x):
-        x = self.embed(x)  # (N, L, D)
-            
-        x = x.unsqueeze(1)  # (N, Ci, L, D), insert a dimention of size one(in_channels Ci)
-        
-        if self.use_bn:
-            x=self.bn2d(x)
-        
-        x = self.conv_sim(x).squeeze() #(N, C, L)
-        #x = F.softmax(x, dim=1)
-        
-        # flatten or chunk-share fc or chunk-no-share fc
-        
-        # flatten
-        #x = self.fc1(self.dropout(x.view(-1, self.C*self.L)))
-        
-        # chunk-share fc
-        #x = self.fc2(self.dropout(x)).squeeze()
-        x = [self.fc2(self.dropout(i)) for i in torch.chunk(x, self.C, 1)]
-        x = torch.cat(x, 1).squeeze()
-        
-#        # chunk-no-share fc
-#        x = torch.chunk(x, self.C, 1)
-#        x = [self.fc3[i](self.dropout(x[i])) for i in range(self.C)]
-#        x = torch.cat(x, 1).squeeze()
-        return x
-
-
 class SimCnnPe(nn.Module):
     """
     use Sim_CNN to learn label presentation and compute similarities to help classification
@@ -549,96 +620,6 @@ class Sim_CNN_PE(nn.Module):
         x = x + self.fc5(self.dropout(pe))
         return x
 
-class SimLSTM(nn.Module):
-    def __init__(self, args):
-        super(SimLSTM, self).__init__()
-        self.V = args.num_embeddings
-        self.D = args.D
-        self.C = args.C
-        self.Ci = args.Ci
-        self.layers = args.rnn_layers
-        self.drop = args.drop if self.layers > 1 else 0
-        weight_matrix = args.weight
-        static = args.static
-        self.bidirectional =  args.bidirectional
-        self.num_directions = 2 if self.bidirectional else 1
-        self.hidden_size = args.hidden_size
-        self.batch_size = args.batch_size
-        
-        self.embed = nn.Embedding(self.V, self.D)
-        self.embed.weight.data.copy_(weight_matrix)
-        self.conv_sim = nn.Conv2d(self.Ci, self.C, (1, self.D)) #10 label vec kernel with size(1,D)
-        self.conv_sim.weight = torch.nn.Parameter(args.label_vecs)
-        if static == 1:
-            self.embed.weight.requires_grad=False
-            self.conv_sim.weight.requires_grad=False
-        elif static == 2:
-            self.embed.weight.requires_grad=False
-        elif static == 3:
-            self.conv_sim.weight.requires_grad=False
-
-        self.rnn = nn.LSTM(               
-            input_size=self.D+self.C,                #The number of expected features in the input x 
-            hidden_size=self.hidden_size,     # rnn hidden unit
-            num_layers=self.layers,           # number of rnn layers
-            batch_first=True,                 # set batch first
-            dropout=self.drop,                #dropout probability
-            bidirectional=self.bidirectional  #bi-LSTM
-        )
-        #pytorch中rnn/lstm/gru权重和偏置默认都是均匀初始化的，一般要将权重改为正交初始化，LSTM的forget gate的bias初始化为1
-        #Orthogonal Initialization, 解决深度网络下的梯度消失、梯度爆炸问题，在RNN中经常使用
-        if self.layers==1:
-            #weight: Orthogonal Initialization
-            nn.init.orthogonal_(self.rnn.weight_ih_l0)
-            nn.init.orthogonal_(self.rnn.weight_hh_l0)
-            #bias: zero init or 1 init; how to set LSTM's forget gate's bias to 1?
-            #nn.init.zeros_(self.rnn.bias_ih_l0)
-            #nn.init.zeros_(self.rnn.bias_hh_l0)
-            #nn.init.ones_(self.rnn.bias_ih_l0)
-            #nn.init.ones_(self.rnn.bias_hh_l0)
-            
-        if self.layers==2:
-            #weight: Orthogonal Initialization
-            nn.init.orthogonal_(self.rnn.weight_ih_l0)
-            nn.init.orthogonal_(self.rnn.weight_hh_l0)
-            #bias: zero init or 1 init; how to set LSTM's forget gate's bias to 1?
-            self.rnn.bias_ih_l0.zero_()
-            self.rnn.bias_hh_l0.zero_()
-            #how about 2nd layer? initialization like layer0 or keep default?
-            
-        self.dropout = nn.Dropout(args.drop)
-        self.fc = nn.Linear(self.num_directions*self.hidden_size, self.C)
-
-    def forward(self, x):
-        # x shape (batch, time_step, input_size), time_step--->seq_len
-        # r_out shape (batch, time_step, output_size), out_put_size--->num_directions*hidden_size
-        # h_n shape (num_layers*num_directions, batch, hidden_size)
-        # c_n shape (num_layers*num_directions, batch, hidden_size)
-        #(h_0,c_0), here we use zero initialization
-        x = self.embed(x)  # (N, L, D)
-        
-        sim = x.unsqueeze(1)  # (N, Ci, L, D), insert a dimention of size one(in_channels Ci)
-        sim = self.conv_sim(sim).squeeze() #(N, C, L)
-        sim = sim.permute(0,2,1) ##(N, L, C)
-        
-        # concatenate x and sim --> (N, L, D+C)
-        x = torch.cat([x,sim],2)
-        
-        #initialization hidden state
-        #1.zero init
-        r_out, (h_n, c_n) = self.rnn(x, None)  # None represents zero initial hidden state
-        
-        # choose r_out at the last time step or outputs at every time step
-        if self.bidirectional:
-            #concatenate normal RNN's last time step(-1) output and reverse RNN's last time step(0) output
-            #print(r_out[:, -1, :self.hidden_size].size()) #[B, hidden_size]
-            out = torch.cat([r_out[:, -1, :self.hidden_size],r_out[:, 0, self.hidden_size:]],1)
-        else:
-            out = r_out[:, -1, :] #[B, hidden_size*num_directions]
-        
-        out = self.fc(self.dropout(out))
-            
-        return out
 
 class SimLSTM1(nn.Module):
     def __init__(self, args):

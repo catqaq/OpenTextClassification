@@ -14,20 +14,19 @@ from time import time
 import numpy as np
 import random
 import copy
-from torchtext import data
+#from torchtext import data
 
      
 def training(train_iter, dev_iter, model, args, device):
     l2 = args.l2
-    static = args.static
     model.to(device)  #move model to device before constructing optimizer for it.
-    if static in [1, 2, 3]:
+    if not args.static and not args.sim_static:
+        optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=l2)
+    else:
         optimizer = optim.Adam(
             filter(lambda p: p.requires_grad, model.parameters()),
             lr=args.lr,
             weight_decay=l2)
-    else:
-        optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=l2)
 
     total_step = len(train_iter)
     train_accs = []
@@ -64,57 +63,6 @@ def training(train_iter, dev_iter, model, args, device):
     show_training(train_accs, dev_accs)
     return model
 
-
-def training_big(train, chunkSize, numChunk, dev_iter, model, args, device):
-    l2 = args.l2
-    static = args.static
-    model.to(device)  #move model to device before constructing optimizer for it.
-    if static in [1, 2, 3]:
-        optimizer = optim.Adam(
-            filter(lambda p: p.requires_grad, model.parameters()),
-            lr=args.lr,
-            weight_decay=l2)
-    else:
-        optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=l2)
-
-    train_accs = []
-    dev_accs = []
-    best_acc = 0
-    t0 = time()
-    for epoch in range(1, args.epochs + 1):
-        # chunk-by-chunk training
-        for chunk in range(numChunk):
-            train.initial()
-            train_iter = data.BucketIterator(dataset=train, batch_size=args.batch_size, shuffle=True, sort_within_batch=False, repeat=False)
-            total_step = len(train_iter)
-            model.train()  #training mode, we should reset it to training mode in each epoch
-            for i, batch in enumerate(train_iter):
-                texts, labels = batch.text.to(device), batch.label.to(device) - 1
-                optimizer.zero_grad()
-                outputs = model(texts)
-    
-                loss = F.cross_entropy(outputs, labels)
-                loss.backward()
-                optimizer.step()
-    
-                #Visualization of the train process
-                if i % 100 == 0:
-                    print('Epoch [{}/{}], Chunk [{}/{}], Step [{}/{}], Loss: {:.4f}'.format(
-                        epoch, args.epochs, chunk+1, numChunk, i+1, total_step, loss.item()))
-        
-        #in each epoch we call eval(), switch to evaluation mode
-        train_accs.append(evaluating(train_iter, model, device))
-        dev_acc = evaluating(dev_iter, model, device)
-        dev_accs.append(dev_acc)
-        if dev_acc > best_acc:
-             best_acc = dev_acc
-             best_model_wts = copy.deepcopy(model.state_dict())
-    
-    model.load_state_dict(best_model_wts)
-    t1 = time()
-    print('training time: %.2f' % (t1 - t0))
-    show_training(train_accs, dev_accs)
-    return model
 
 def evaluating(data_iter, model, device):
     model.to(device)
@@ -157,3 +105,54 @@ def setup_seed(seed):
      random.seed(seed)
      torch.backends.cudnn.deterministic = True
      torch.backends.cudnn.benchmark = False
+
+
+#def training_big(train, chunkSize, numChunk, dev_iter, model, args, device):
+#    l2 = args.l2
+#    model.to(device)  #move model to device before constructing optimizer for it.
+#    if not args.static and not args.sim_static:
+#        optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=l2)
+#    else:
+#        optimizer = optim.Adam(
+#            filter(lambda p: p.requires_grad, model.parameters()),
+#            lr=args.lr,
+#            weight_decay=l2)
+#
+#    train_accs = []
+#    dev_accs = []
+#    best_acc = 0
+#    t0 = time()
+#    for epoch in range(1, args.epochs + 1):
+#        # chunk-by-chunk training
+#        for chunk in range(numChunk):
+#            train.initial()
+#            train_iter = data.BucketIterator(dataset=train, batch_size=args.batch_size, shuffle=True, sort_within_batch=False, repeat=False)
+#            total_step = len(train_iter)
+#            model.train()  #training mode, we should reset it to training mode in each epoch
+#            for i, batch in enumerate(train_iter):
+#                texts, labels = batch.text.to(device), batch.label.to(device) - 1
+#                optimizer.zero_grad()
+#                outputs = model(texts)
+#    
+#                loss = F.cross_entropy(outputs, labels)
+#                loss.backward()
+#                optimizer.step()
+#    
+#                #Visualization of the train process
+#                if i % 100 == 0:
+#                    print('Epoch [{}/{}], Chunk [{}/{}], Step [{}/{}], Loss: {:.4f}'.format(
+#                        epoch, args.epochs, chunk+1, numChunk, i+1, total_step, loss.item()))
+#        
+#        #in each epoch we call eval(), switch to evaluation mode
+#        train_accs.append(evaluating(train_iter, model, device))
+#        dev_acc = evaluating(dev_iter, model, device)
+#        dev_accs.append(dev_acc)
+#        if dev_acc > best_acc:
+#             best_acc = dev_acc
+#             best_model_wts = copy.deepcopy(model.state_dict())
+#    
+#    model.load_state_dict(best_model_wts)
+#    t1 = time()
+#    print('training time: %.2f' % (t1 - t0))
+#    show_training(train_accs, dev_accs)
+#    return model

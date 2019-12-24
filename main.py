@@ -14,7 +14,7 @@ from torchtext.vocab import Vectors
 from nltk.tokenize import word_tokenize
 from models import TextCNN, LSTM, GRU, BiLSTM_LSTM
 #u can ignore sims
-from sims import Hybrid_CNN, Sim_CNN, SimLSTM, SimLSTM1, SimLSTM2, SimLSTM3,\
+from sims import Hybrid_CNN, SimCNN, SimLSTM, SimLSTM1, SimLSTM2, SimLSTM3,\
 SimLSTM4, SimLSTM5, SimLSTM6, SimLSTM7, SimLSTM8, SimLSTM9, SimLSTM10, \
 SimLSTM11, SimAttn, SimAttn1, SimAttn2, SimAttn3, SimAttnPE1, SimCnnPe, SimAttnX
 
@@ -26,9 +26,9 @@ models = {
     'TextCNN': TextCNN,
     'LSTM': LSTM,
     'GRU': GRU,
-    'Sim_CNN': Sim_CNN,
-    'Hybrid': Hybrid_CNN,
+    'SimCNN': SimCNN,
     'SimLSTM': SimLSTM,
+    'Hybrid': Hybrid_CNN,
     'SimLSTM1': SimLSTM1,
     'SimLSTM2': SimLSTM2,
     'SimLSTM3': SimLSTM3,
@@ -112,10 +112,11 @@ if __name__ == '__main__':
         Cout=256,            #kernel numbers
         kernel_size=[3, 4, 5],  #different kernel size
         dropout=0.5,
-        num_epochs=5,
+        num_epochs=10,
         lr=0.001,
         weight_decay=0,
-        static=2,            #update the embeddings or not
+        static=True,            #update the embeddings or not
+        sim_static=True,    #only used for sims.py: update label_vec_kernel or not
         batch_size=256,
         batch_normalization=False,
         hidden_size=256,    #100,128,256...
@@ -130,10 +131,9 @@ if __name__ == '__main__':
     )
 
     classifier = 'TextCNN'
-    # u can use 1 or 2 for static and 3 or 4 for non-static
-    if args.static in [1, 2]:
+    if args.static:
         print('static %s(without updating embeddings):' % classifier)
-    elif args.static in [3, 4]:
+    else:
         print('non-static %s(update embeddings):' % classifier)
 
     model = models[classifier](args)
