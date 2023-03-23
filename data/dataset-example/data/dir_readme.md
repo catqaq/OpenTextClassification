@@ -1,0 +1,1 @@
+## Store formatted data, such as text-label

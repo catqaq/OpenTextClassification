@@ -134,5 +134,7 @@ result
 .idea
 /logs
 /models
-/data/
+#/data/
+data/*
+!data/dataset-example
 repos
