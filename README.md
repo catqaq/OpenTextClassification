@@ -187,7 +187,7 @@ OpenTextClassification项目为羡鱼智能【xianyu.ai】发起的OpenNLP计划
 
 本项目第一版由本羡鱼利用业务时间（熬夜）独立完成，受限于精力和算力，拖延至今，好在顺利完成了。如果大家觉得本项目对你的NLP学习/研究/工作有所帮助的话，求一个免费的star! 富哥富姐们可以考虑赞助一下！尤其是算力，租卡的费用已经让我颇为肉疼了。
 
-![image-20230324005342510](https://xianyunlp.oss-cn-hangzhou.aliyuncs.com/uPic/image-20230324005342510.png)
+<img src="https://xianyunlp.oss-cn-hangzhou.aliyuncs.com/uPic/image-20230324010955205.png" alt="image-20230324010955205" style="zoom: 25%;" />
 
 ## Starchart
 
