@@ -130,22 +130,80 @@ OpenTextClassification项目为OpenNLP计划的第一个正式的开源项目，
 笔者提供了从浅到深再到多标签的详细实验结果，可供大家参考。但受限于时间和算力，很多实验可能未达到最优，望知悉！因此，非常欢迎大家积极贡献，补充相关实验、代码和新的模型等等，一起建设OpenTextClassification。
 
 暂时只提供部分汇总的结果，详细的实验结果及参数等我有空再补，比较多，需要一些时间整理。
+### 1.传统浅层文本分类模型
 
-| Data     | Model                    | tokenizer | 最小词长 | Min_df | ngram | binary | Use_idf | Test acc | 备注                                                         |
-| -------- | ------------------------ | --------- | -------- | ------ | ----- | ------ | ------- | -------- | ------------------------------------------------------------ |
-| THUCNews | LR                       | lcut      | 1        | 2      | (1,1) | False  | True    | 90.61%   | C=1.0, max_iter=1000  词表61549；  train score:  94.22%  valid score:  89.84%  test score: 90.61%  training time:  175070.97 ms |
-|          | MultinomialNB(alpha=0.3) | lcut      | 1        | 2      | (1,1) | False  | True    | 89.86%   | 词表61549；  training time: 94.18ms                          |
-|          | ComplementNB(alpha=0.8)  | lcut      | 1        | 2      | (1,1) | False  | True    | 89.88%   | 词表61549；  training time: 98.31ms                          |
-|          | SVC(C=1.0)               | lcut      | 1        | 2      | (1,1) | False  | True    | 81.49%   | 词表61549；  维度200  training time:  7351155.59 ms  train score:  85.95%  valid score:  80.07%  test score: 81.49% |
-|          | DT                       | lcut      | 1        | 2      | (1,1) | False  | True    | 71.19%   | max_depth=None     training time:  149216.53 ms  train score:  99.97%  valid score:  70.57%  test score: 71.19% |
-|          | xgboost                  | lcut      | 1        | 2      | (1,1) | False  | True    | 90.08%   | XGBClassifier(n_estimators=2000,eta=0.3,gamma=0.1,max_depth=6,subsample=1,colsample_bytree=0.8,  nthread=10)  training time:  1551260.28 ms  train score:  99.00%  valid score:  89.34%  test score: 90.08% |
-|          | KNN                      | lcut      | 1        | 2      | (1,1) | False  | True    | 83.34%   | k=5  training time:  22.14 ms  train score:  89.57%  valid score:  82.69%  test score: 83.34% |
-|          |                          |           |          |        |       |        |         |          |                                                              |
+| Data        | Model                    | tokenizer | 最小词长 | Min_df | ngram | binary | Use_idf | Test acc | 备注                                                         |
+| ----------- | ------------------------ | --------- | -------- | ------ | ----- | ------ | ------- | -------- | ------------------------------------------------------------ |
+| THUCNews/cn | LR                       | lcut      | 1        | 2      | (1,1) | False  | True    | 90.61%   | C=1.0, max_iter=1000  词表61549；  train score:  94.22%  valid score:  89.84%  test score: 90.61%  training time:  175070.97 ms |
+|             | MultinomialNB(alpha=0.3) | lcut      | 1        | 2      | (1,1) | False  | True    | 89.86%   | 词表61549；  training time: 94.18ms                          |
+|             | ComplementNB(alpha=0.8)  | lcut      | 1        | 2      | (1,1) | False  | True    | 89.88%   | 词表61549；  training time: 98.31ms                          |
+|             | SVC(C=1.0)               | lcut      | 1        | 2      | (1,1) | False  | True    | 81.49%   | 词表61549；  维度200  training time:  7351155.59 ms  train score:  85.95%  valid score:  80.07%  test score: 81.49% |
+|             | DT                       | lcut      | 1        | 2      | (1,1) | False  | True    | 71.19%   | max_depth=None     training time:  149216.53 ms  train score:  99.97%  valid score:  70.57%  test score: 71.19% |
+|             | xgboost                  | lcut      | 1        | 2      | (1,1) | False  | True    | 90.08%   | XGBClassifier(n_estimators=2000,eta=0.3,gamma=0.1,max_depth=6,subsample=1,colsample_bytree=0.8,  nthread=10)  training time:  1551260.28 ms  train score:  99.00%  valid score:  89.34%  test score: 90.08% |
+|             | KNN                      | lcut      | 1        | 2      | (1,1) | False  | True    | 85.17%   | k=10  training time:  21.24 ms  train score:  89.05%  valid score:  84.53%  test score: 85.17% |
+|             |                          |           |          |        |       |        |         |          |                                                              |
+| dbpedia/en  | LR                       | None      | 2        | 2      | (1,1) | False  | True    | 98.26%   | C=1.0, max_iter=100  词表237777  training time:  220177.59 ms  train score:  98.85%  valid score:  98.19%  test score: 98.26% |
+|             | MultinomialNB(alpha=1.0) | None      | 2        | 2      | (1,1) | False  | True    | 95.35%   | training time:  786.24 ms  train score:  96.36%  valid score:  95.34%  test score: 95.35% |
+|             | ComplementNB(alpha=1.0)  | None      | 2        | 2      | (1,1) | False  | True    | 93.73%   | training time:  805.69 ms  train score:  95.30%  valid score:  93.79%  test score: 93.73% |
+|             | SVC(C=1.0)               | None      | 2        | 2      | (1,1) | False  | True    | 94.67%   | 维度200；  max_iter=100     training time:  144163.81 ms  train score:  94.75%  valid score:  94.59%  test score: 94.67%  注意：SVM的计算和存储成本正比于样本数的平方； |
+|             | DT                       | None      | 2        | 2      | (1,1) | False  | True    | 92.41%   | max_depth=100,  min_samples_leaf=5     training  time: 639744.56 ms  train  score: 95.79%  valid  score: 92.43%  test  score: 92.41% |
+|             | xgboost                  | None      | 2        | 2      | (1,1) | False  | True    | 97.99%   | XGBClassifier(n_estimators=200,eta=0.3,gamma=0.1,max_depth=6,subsample=1,colsample_bytree=0.8,  nthread=10,reg_alpha=0,reg_lambda=1)     training time:  1838434.42 ms  train score:  99.35%  valid score:  97.96%  test score: 97.99% |
+|             | KNN                      | None      | 2        | 2      | (1,1) | False  | True    | 80.05%   | k=10  training time:  137.72 ms  train score:  84.66%  valid score:  80.20%  test score: 80.05% |
+|             |                          |           |          |        |       |        |         |          |                                                              |
+
+###  2.深度学习文本分类模型
+
+| Data        | Model       | Embed | Bz   | Lr   | epochs | acc    | 备注              |
+| ----------- | ----------- | ----- | ---- | ---- | ------ | ------ | ----------------- |
+| THUCNews/cn | TextCNN     | outer | 128  | 1e-3 | 3/20   | 90.45% |                   |
+|             | TextRNN     | -     | -    | 1e-3 | 5/10   | 90.38% |                   |
+|             | TextRNN_Att |       |      | 1e-3 | 2/10   | 90.55% |                   |
+|             | TextRCNN    |       |      | 1e-3 | 3/10   | 91.01% |                   |
+|             | DPCNN       |       |      | 1e-3 | 3/20   | 90.12% |                   |
+|             | FastText    |       |      | 1e-3 | 5/20   | 90.48% |                   |
+|             | bert        | inner |      | 5e-5 | 2/3    | 94.10% | bert-base-chinese |
+|             | ERNIE       | inner |      | 5e-5 | 3/3    | 94.58% | ernie-3.0-base-zh |
+|             | bert_CNN    |       |      | -    | 3/3    | 94.14% |                   |
+|             | bert_RNN    |       |      | -    | 3/3    | 93.92% |                   |
+|             | bert_RNN    |       |      | -    | 3/3    | 94.45% |                   |
+|             | bert_RCNN   |       |      | -    | 3/3    | 94.32% |                   |
+|             | bert_DPCNN  |       |      | -    | 3/3    | 94.17% |                   |
+|             |             |       |      |      |        |        |                   |
+| dbpedia/en  | TextCNN     | outer | 128  | 5e-5 | 9/20   | 98.35% | glove             |
+|             | TextRNN     | -     | -    | -    | 6/10   | 97.97% |                   |
+|             | TextRNN_Att |       |      | -    | 4/10   | 97.80% |                   |
+|             | TextRCNN    |       |      | -    | 3/10   | 97.71% |                   |
+|             | DPCNN       |       |      | -    | 3/20   | 97.86% |                   |
+|             | FastText    |       |      | -    | 10/20  | 97.84% |                   |
+|             | bert        | inner |      | 5e-5 | 2/3    | 97.78% | bert-base-uncased |
+|             | ERNIE       |       |      |      | 2/10   | 97.75% | ernie-2.0-base-en |
+|             | bert_CNN    |       |      | -    | 2/3    | 97.91% |                   |
+|             | bert_RNN    |       |      | -    | 2/3    | 97.87% |                   |
+|             | bert_RCNN   |       |      | -    | 2/3    | 98.04% |                   |
+|             | bert_DPCNN  |       |      | -    | 2/3    | 97.95% |                   |
+|             |             |       |      |      |        |        |                   |
+
+### 3.多标签文本分类
+
+| Data    | Model       | 分层 | 样本数 | Embed | loss                    | Bz   | Lr   | epochs | Test acc  (绝对匹配率） | Micro-F1 | Macro-F1 | 备注                                    |
+| ------- | ----------- | ---- | ------ | ----- | ----------------------- | ---- | ---- | ------ | ----------------------- | -------- | -------- | --------------------------------------- |
+| Rcv1/en | TextCNN     | -    | all    | outer | multi_label_circle_loss | 128  | 1e-3 | 9/20   | 51.02%                  | 0.7904   | 0.4515   | eval_activate = None  cls_threshold = 0 |
+|         | TextRNN     |      |        | -     |                         | -    | -    | 13/20  | 54.00%                  | 0.7950   | 0.4358   |                                         |
+|         | TextRNN_Att |      |        |       |                         |      | -    | 11/20  | 53.97%                  | 0.8011   | 0.4538   |                                         |
+|         | TextRCNN    |      |        |       |                         |      | -    | 10/20  | 53.62%                  | 0.8111   | 0.4900   |                                         |
+|         | DPCNN       |      |        |       |                         |      | -    | 10/20  | 51.66%                  | 0.7890   | 0.4111   |                                         |
+|         | FastText    |      |        |       |                         |      | -    | 12/20  | 51.31%                  | 0.7936   | 0.4728   |                                         |
+|         | bert        |      | all    | inner | -                       | 128  | 2e-5 | 20/20  | 61.04%                  | 0.8454   | 0.5729   | bert-base-cased                         |
+|         | ERNIE       |      | all    | inner | -                       | 128  | 2e-5 | 20/20  | 61.67%                  | 0.8486   | 0.5861   | ernie-2.0-base-en                       |
+|         | Bert_CNN    |      | all    | inner | -                       | 128  | 2e-5 | 12/20  | 58.31%                  | 0.8364   | 0.5736   | 同bert配置                              |
+|         | Bert_RNN    |      | all    | inner | -                       | 128  | 2e-5 | 17/20  | 60.48%                  | 0.8371   | 0.5640   |                                         |
+|         | Bert_RCNN   |      | all    | inner | -                       | 128  | 2e-5 | 15/20  | 60.54%                  | 0.8457   | 0.5969   |                                         |
+|         | Bert_DPCNN  |      | all    | inner | -                       | 128  | 2e-5 | 13/20  | 56.52%                  | 0.8082   | 0.4273   |                                         |
+|         |             |      |        |       |                         |      |      |        |                         |          |          |                                         |
+
+
 
  
-
-
-
 
 
 ## 常见报错
