@@ -15,7 +15,7 @@
       <a href="https://github.com/catqaq/OpenTextClassification/graphs/contributors">
         <img alt="GitHub Contributors" src="https://img.shields.io/github/contributors/catqaq/OpenTextClassification" />
       </a>
-      <a href="https://github.com/kaixindelele/ChatPaper/issues">
+      <a href="https://github.com/catqaq/OpenTextClassification/issues">
         <img alt="Issues" src="https://img.shields.io/github/issues/catqaq/OpenTextClassification?color=0088ff" />
       </a>
       <a href="https://github.com/catqaq/OpenTextClassification/pulls">
@@ -248,7 +248,7 @@ OpenTextClassification项目为羡鱼智能【xianyu.ai】发起的OpenNLP计划
 
 ## Starchart
 
-[![Star History Chart](https://api.star-history.com/svg?repos=catqaq/OpenTextClassification&type=Date)](https://star-history.com/#kaixindelele/ChatPaper&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=catqaq/OpenTextClassification&type=Date)](https://star-history.com/#catqaq/OpenTextClassification&Date)
 
 ## Contributors
 
