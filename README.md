@@ -18,6 +18,9 @@
       <a href="https://github.com/catqaq/OpenTextClassification/issues">
         <img alt="Issues" src="https://img.shields.io/github/issues/catqaq/OpenTextClassification?color=0088ff" />
       </a>
+      <a href="https://github.com/catqaq/OpenTextClassification/discussions">
+        <img alt="Issues" src="https://img.shields.io/github/discussions/catqaq/OpenTextClassification?color=0088ff" />
+      </a>
       <a href="https://github.com/catqaq/OpenTextClassification/pulls">
         <img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/catqaq/OpenTextClassification?color=0088ff" />
       <a href="https://github.com/catqaq/OpenTextClassification/stargazers">
