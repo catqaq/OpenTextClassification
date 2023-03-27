@@ -28,7 +28,7 @@
       <br/>
       <a href="https://zhuanlan.zhihu.com/p/596112080/"><strong>文章解读</strong></a>
         ·
-      <a href="https://zhuanlan.zhihu.com/p/596112080"><strong>视频解读</strong></a>
+      <a href="https://zhuanlan.zhihu.com/p/617133715?"><strong>视频解读</strong></a>
     </p>
 
 
