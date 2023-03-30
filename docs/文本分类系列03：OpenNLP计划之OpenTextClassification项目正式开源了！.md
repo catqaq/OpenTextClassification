@@ -27,9 +27,10 @@ ChatGPT自从去年十一月横空出世以来，迅速席卷全球，两个月�
 	- 开源项目：done
 	- papers解读：doing
 	- 炼丹术：doing
-- OpenLLMs：大语言模型，doing，缺时间缺算力，不是很顺利~
 - OpenSE：句嵌入，doing
-- OpenTextTagger：文本标注
+- OpenChat：筹备中
+- OpenLLMs：大语言模型，doing，缺时间缺算力，不是很顺利~
+- OpenTextTagger：文本标注，分词、NER、磁性标注等
 - OpenX：任重而道远
 
 ## OpenTextClassification项目
