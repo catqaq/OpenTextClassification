@@ -44,7 +44,7 @@
 
 - [💥最新讯息](#最新讯息)
 - [💫OpenNLP计划](#OpenNLP计划)
-- [💫OpenTextCLS](##OpenTextClassification)
+- [💫OpenTextCLS](#OpenTextClassification项目)
 - [⛏️使用步骤](#使用步骤)
 - [📄运行示例](#运行示例)
 - [📄结果展示](#结果展示)
@@ -84,7 +84,7 @@
 - 【P2】OpenTextTagger：文本标注，分词、NER、词性标注等
 - OpenX：任重而道远
 
-## OpenTextClassification
+## OpenTextClassification项目
 
 OpenTextClassification项目为OpenNLP计划的第一个正式的开源项目，旨在Open NLP for everyone！在以ChatGPT/GPT4为代表的LLMs时代，在被OpenAI卷死之前，做一点有意义的事情！未来有一天，等到GPT-X发布的时候，或许有人会说NLP不存在了，但是我们想证明有人曾来过！
 
