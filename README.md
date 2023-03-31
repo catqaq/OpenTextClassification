@@ -44,7 +44,7 @@
 
 - [💥最新讯息](#最新讯息)
 - [💫OpenNLP计划](#OpenNLP计划)
-- [💫OpenTextCLS](#OpenTextClassification)
+- [💫OpenTextCLS](##OpenTextClassification)
 - [⛏️使用步骤](#使用步骤)
 - [📄运行示例](#运行示例)
 - [📄结果展示](#结果展示)
