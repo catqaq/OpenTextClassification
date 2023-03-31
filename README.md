@@ -43,7 +43,8 @@
 
 
 - [💥最新讯息](#最新讯息)
-- [💫开发计划](#开发计划)
+- [💫OpenNLP计划](#OpenNLP计划)
+- [💫OpenTextCLS](#OpenTextClassification项目)
 - [⛏️使用步骤](#使用步骤)
 - [📄运行示例](#运行示例)
 - [📄结果展示](#结果展示)
@@ -64,9 +65,57 @@
   - 支持多标签文本分类
   - 支持多种embedding方式：inner/outer/random
 
-## 开发计划
+## OpenNLP计划
+
+我们是谁？
+
+我们是**羡鱼智能**【xianyu.ai】，主要成员是一群来自老和山下、西湖边上的咸鱼们，塘主叫作羡鱼，想在LLMs时代做点有意义的事！我们的口号是：**做OpenNLP和OpenX！希望在CloseAI卷死我们之前退出江湖！**
+
+也许有一天，等到GPT-X发布的时候，有人会说NLP不存在了，但是我们想证明有人曾经来过、热爱过！在以ChatGPT/GPT4为代表的LLMs时代，在被CloseAI卷死之前，我们发起了OpenNLP计划，宗旨是OpenNLP for everyone! 
+
+- 【P0】OpenTextClassification：打造一流的文本分类项目，已开源
+	- 综述：done
+	- 开源项目：done
+	- papers解读：doing
+	- 炼丹术：doing
+- 【P0】OpenSE：句嵌入，自然语言处理的核心问题之一，doing
+- 【P0】OpenChat：筹备中，贫穷使人绝望，无卡使人悲伤
+- 【P1】OpenLLMs：大语言模型，doing
+- 【P2】OpenTextTagger：文本标注，分词、NER、词性标注等
+- OpenX：任重而道远
+
+## OpenTextClassification
 
 OpenTextClassification项目为OpenNLP计划的第一个正式的开源项目，旨在Open NLP for everyone！在以ChatGPT/GPT4为代表的LLMs时代，在被OpenAI卷死之前，做一点有意义的事情！未来有一天，等到GPT-X发布的时候，或许有人会说NLP不存在了，但是我们想证明有人曾来过！
+
+### 开发计划
+
+本项目的开发宗旨，打造全网最全面和最实用的文本分类项目和教程。如果有机会，未来希望可以做成开箱即用的文本分类工具，文本分类任务非常特殊，大部分情况下被认为是简单且基础的，然而却很难找到比较通用的文本分类工具，往往都是针对具体任务进行训练和部署。在NLP逐渐趋于大一统的今天，这一点非常不优雅，而且浪费资源。：***Open text classification for you, Start your NLP journey!\***
+
+**简要的开发计划**：
+
+1. 【P3】支持中英双语的文本分类：100%，也欢迎支持其他语种
+2. 【P0】支持多种文本分类模型：基本完成，欢迎补充
+	1. 浅层文本分类模型：done
+	2. 【P1】DNN类模型：已支持常见模型
+	3. 【P0】transformer类模型：Bert/ERNIE等
+	4. 【P0】prompt learning for Text Classification：TODO
+	5. 【P0】ChatGPT for Text Classification：TODO
+3. 【P1】支持多标签文本分类：
+	1. 多种多标签分类loss：done，如有遗漏，欢迎补充
+	2. 复杂的多标签分类：比如层次化等，TODO
+4. 【P0】支持不同的文本分类数据集/任务：文本分类任务又多又散，这是好事儿也是坏事儿。欢迎基于本项目报告各种数据集上的效果
+5. 【P4】支持简明易用的文本分类API：终极目标为实现一个足够通用和强大的文本分类模型，并实现自然语言交互的文本分类接口text_cls(text, candidate_labels)->label，给定文本和候选类别(有默认值)，输出文本所属的类别；同时支持可无成本或尽可能小的成本向特定领域泛化
+
+### 加入我们
+
+OpenNLP计划的其他内容尚在筹备中，暂时只开源了本项目。欢迎大家积极参与OpenTextClassification的建设和讨论，一起变得更强！
+
+加入方式：
+
+- **项目建设**：可以在前面列出的开发计划中选择自己感兴趣的部分进行开发，建议优先选择高优先级的任务，比如添加更多的模型和数据结果。
+- 微信交流群：知识在讨论中发展，待定
+- 技术分享和讨论：输出倒逼输入，欢迎投稿，稿件会同步到本项目的docs目录和知乎专栏OpenNLP. 同时也欢迎大家积极的参与本项目的讨论https://github.com/catqaq/OpenTextClassification/discussions。
 
 
 
@@ -128,7 +177,7 @@ OpenTextClassification项目为OpenNLP计划的第一个正式的开源项目，
 | run_multi_label.py | rcv1/en     | bert     | 61.04% | ~40mins   | 其他指标见运行结果 |
 | run_shallow.py     | THUCNews/cn | NB       | 89.44% | 105.34 ms |                    |
 
-## 结果展示：待完善
+## 结果展示：持续更新中
 
 笔者提供了从浅到深再到多标签的详细实验结果，可供大家参考。但受限于时间和算力，很多实验可能未达到最优，望知悉！因此，非常欢迎大家积极贡献，补充相关实验、代码和新的模型等等，一起建设OpenTextClassification。
 
@@ -245,7 +294,7 @@ https://scikit-learn.org/stable/modules/model_evaluation.html#classification-met
 
 OpenTextClassification项目为羡鱼智能【xianyu.ai】发起的OpenNLP计划的第一个正式的开源项目，旨在Open NLP for everyone！在以ChatGPT/GPT4为代表的LLMs时代，在被OpenAI卷死之前，做一点有意义的事情！未来有一天，等到GPT-X发布的时候，或许有人会说NLP不存在了，但是我们想证明有人曾来过！
 
-本项目第一版由本羡鱼利用业务时间（熬夜）独立完成，受限于精力和算力，拖延至今，好在顺利完成了。如果大家觉得本项目对你的NLP学习/研究/工作有所帮助的话，求一个免费的star! 富哥富姐们可以考虑赞助一下！尤其是算力，租卡的费用已经让我颇为肉疼了。
+本项目第一版由本羡鱼利用业务时间（熬夜）独立完成，受限于精力和算力，拖延至今，好在顺利完成了。如果大家觉得本项目对你的NLP学习/研究/工作有所帮助的话，求一个免费的star! 富哥富姐们可以考虑赞助一下！尤其是算力，**租卡的费用已经让本不富裕的鱼塘快要无鱼可摸了**！
 
 <img src="https://xianyunlp.oss-cn-hangzhou.aliyuncs.com/uPic/image-20230324010955205.png" alt="image-20230324010955205" style="zoom: 25%;" />
 
