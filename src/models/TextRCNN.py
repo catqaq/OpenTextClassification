@@ -25,6 +25,7 @@ class Config(object):
 
         self.dropout = 1.0  # 随机失活
         self.require_improvement = 1000  # 若超过1000batch效果还没提升，则提前结束训练
+        self.multi_label = False
         self.num_classes = len(self.class_list)  # 类别数
         self.vocab = None
         self.n_vocab = 0  # 词表大小，在运行时赋值
