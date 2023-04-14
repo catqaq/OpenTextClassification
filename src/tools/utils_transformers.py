@@ -35,7 +35,7 @@ def build_dataset(config, n_samples=None, sep="\t", multi_label=False):
                 #     print(lin.split(','))
                 #     break
                 token = config.tokenizer.tokenize(content)
-                token = [CLS] + token
+                token = [CLS] + token  # +cls这一步对GPT等模型来说不合适：TODO
                 seq_len = len(token)
                 mask = []
                 token_ids = config.tokenizer.convert_tokens_to_ids(token)
@@ -43,7 +43,7 @@ def build_dataset(config, n_samples=None, sep="\t", multi_label=False):
                 if pad_size:
                     if len(token) < pad_size:
                         mask = [1] * len(token_ids) + [0] * (pad_size - len(token))
-                        token_ids += ([0] * (pad_size - len(token)))
+                        token_ids += ([0] * (pad_size - len(token)))  # 这里应该填充pad id而非0：TODO
                     else:
                         mask = [1] * pad_size
                         token_ids = token_ids[:pad_size]
